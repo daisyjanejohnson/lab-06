@@ -3,30 +3,27 @@
 
 //use exoress library to set up server
 const express = require('express');
-const app = express();
-
-
+//add the bodyguard
+const cors = require('cors');
 // get our secrets from our secret keeper
 require('dotenv').config();
 
-//add the bodyguard
-const cors = require('cors');
-app.use(cors());
-
+const app = express();
 // bring in the PORT from the env
 const PORT = process.env.PORT || 3001;
 
+app.use(cors());
 
 // get the location
 app.get('/location', (request, response) => {
   try {
-    console.log(request.query.city);
-    let search_query = request.query.city
+    // request the data
+    const city = request.query.city
+    // grab the data
     let geoData = require('./data/location.json');
-
-    let returnObj = new Location(search_query, geoData[0]);
-
-    console.log(returnObj);
+    // grab geoData[0] to grab the object
+    let returnObj = new Location(city, geoData[0]);
+    // respond to the request by sending out the data
     response.status(200).send(returnObj);
   } catch (err) {
     console.log('ERROR', err);
@@ -39,7 +36,7 @@ app.get('/location', (request, response) => {
 //   response.status(200).send('I like pizza');
 // });
 
-
+// Make a location consrtuctor to make new locations as data comes in
 function Location(searchQuery, obj) {
   this.search_query = searchQuery;
   this.formatted_query = obj.display_name;
@@ -50,15 +47,21 @@ function Location(searchQuery, obj) {
 
 app.get('/weather', (request, response) => {
   try {
-    const weatherInfo = getTheWeather(request.query.data);
-    response.status(200).send(weatherInfo)
+    let search_query = request.query.search_query;
+
+    let weatherArray = [];
+    let weatherData = require('./data/weather.json');
+
+    weatherData.data.forEach((day) => {
+      weatherArray.push(new Weather(day));
+    })
+
+    response.status(200).send(weatherArray);
   } catch (err) {
     console.log('ERROR', err);
     response.status(500).send('Sorry we messed up!');
   }
 })
-
-
 function Weather(obj) {
   this.forecast = obj.weather.description;
   this.time = obj.valid_date;
@@ -66,14 +69,6 @@ function Weather(obj) {
 
 // your gonna have an empty array for weather. forEach over that data and push new instance into array.
 
-function getTheWeather() {
-  const weatherData = require('./data/weather.json');
-  const weatherArray = [];
-  weatherData.data.forEach((day) => {
-    weatherArray.push(new Weather(day));
-  })
-  return weatherArray;
-}
 
 
 app.listen(PORT, () => {
