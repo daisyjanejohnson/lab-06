@@ -52,25 +52,30 @@ function Location(searchQuery, obj) {
 app.get('/weather', (request, response) => {
   try {
     let search_query = request.query.search_query;
-    console.log('the thing the front end is sending on the weather route', search_query);
+    // console.log('the thing the front end is sending on the weather route', search_query);
+
+    let url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${search_query}&key=${process.env.WEATHER_API_KEY}&days=8`;
+
+    superagent.get(url)
+      .then(resultsFromSuperAgent => {
+        console.log(resultsFromSuperAgent.body);
+        const weatherArr = resultsFromSuperAgent.body.data.map(day => {
+          return new Weather(day);
+        })
+        response.status(200).send(weatherArr);
+
+      })
 
 
-
-    let weatherData = require('./data/weather.json');
-
-    const weatherArr = weatherData.data.map(day => {
-      return new Weather(day);
-    })
-
-    response.status(200).send(weatherArr);
   } catch (err) {
     console.log('ERROR', err);
     response.status(500).send('Sorry we messed up!');
   }
 })
 function Weather(obj) {
+  console.log(obj);
   this.forecast = obj.weather.description;
-  this.time = obj.valid_date;
+  this.time = new Date(obj.datetime).toDateString();
 }
 
 // your gonna have an empty array for weather. forEach over that data and push new instance into array.
