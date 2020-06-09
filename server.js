@@ -54,7 +54,7 @@ app.get('/weather', (request, response) => {
 
     superagent.get(url)
       .then(resultsFromSuperAgent => {
-        console.log(resultsFromSuperAgent.body);
+        // console.log(resultsFromSuperAgent.body);
         const weatherArr = resultsFromSuperAgent.body.data.map(day => {
           return new Weather(day);
         })
@@ -69,21 +69,44 @@ app.get('/weather', (request, response) => {
   }
 })
 function Weather(obj) {
-  console.log(obj);
+  // console.log(obj);
   this.forecast = obj.weather.description;
   this.time = new Date(obj.datetime).toDateString();
 }
 
 app.get('/trails', (request, response) => {
-  let {latitude, longitude} = request.body.trails;
+  let lat = request.query.latitude;
+  let lon = request.query.longitude;
+  // console.log(request.query);
 
-  let url = ` https://www.hikingproject.com/data/get-trails?${latitude, longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
+  let url = `https://www.hikingproject.com/data/get-trails?lat=${lat}&lon=${lon}&key=${process.env.TRAILS_API_KEY}`;
 
-  superage
+  superagent.get(url)
+    .then(resultsFromSuperAgent => {
+
+      const trailArr = resultsFromSuperAgent.body.trails.map(trail => {
+        return new Trail(trail);
+      })
+      // let returnObj = new Trail(resultsFromSuperAgent.body.trails[0]);
+
+      response.status(200).send(trailArr);
+    }).catch(err => console.log(err));
+
 })
 
-//
 
+function Trail(obj) {
+  this.name = obj.name;
+  this.location = obj.location;
+  this.length = obj.length;
+  this.stars = obj.stars;
+  this.star_votes = obj.starVotes;
+  this.trail_url = obj.url;
+  this.conditions = `${obj.conditionStatus} ${obj.conditionDetails}`;
+  this.condition_date = obj.conditionDate.slice(0, 10);
+  this.condition_time = obj.conditionDate.slice(12, 19);
+}
+//
 
 app.listen(PORT, () => {
   console.log(`listening on ${PORT}`);
