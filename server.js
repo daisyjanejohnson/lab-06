@@ -35,11 +35,6 @@ app.get('/location', (request, response) => {
   }
 })
 
-// app.get('/', (request, response) => {
-//   console.log('hello out there');
-//   response.status(200).send('I like pizza');
-// });
-
 // Make a location consrtuctor to make new locations as data comes in
 function Location(searchQuery, obj) {
   this.search_query = searchQuery;
@@ -52,6 +47,7 @@ function Location(searchQuery, obj) {
 app.get('/weather', (request, response) => {
   try {
     let search_query = request.query.search_query;
+
     // console.log('the thing the front end is sending on the weather route', search_query);
 
     let url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${search_query}&key=${process.env.WEATHER_API_KEY}&days=8`;
@@ -78,8 +74,15 @@ function Weather(obj) {
   this.time = new Date(obj.datetime).toDateString();
 }
 
-// your gonna have an empty array for weather. forEach over that data and push new instance into array.
+app.get('/trails', (request, response) => {
+  let {latitude, longitude} = request.body.trails;
 
+  let url = ` https://www.hikingproject.com/data/get-trails?${latitude, longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
+
+  superage
+})
+
+//
 
 
 app.listen(PORT, () => {
