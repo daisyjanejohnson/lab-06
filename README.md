@@ -55,3 +55,46 @@ Finish time: 5:00
 Actual time needed to complete: 30 minutes
 
 ![6/8/2020 Partner Whiteboarding](whiteboard1.png)
+
+
+6/9/2020
+# Lab 07
+
+Number and name of feature: Feature 1 Data formatting
+
+Estimate of time needed to complete: 1 hour
+
+Start time: 3:00 p.m.
+
+Finish time: 3:30 p.m
+Actual time needed to complete: 30 min
+
+Number and name of feature: Feature 2 Locations
+Estimate of time needed to complete: 45 min
+
+Start time: 3:30p.m.
+
+Finish time: 4:00 p.m.
+
+Actual time needed to complete: 30 min
+
+Number and name of feature: Feature 3 Weather
+
+Estimate of time needed to complete: 1 hour
+
+Start time: 4:00pm
+
+Finish time: 4:45pm
+Actual time needed to complete: 45 min
+
+Number and name of feature:Feature 4 Trails
+Estimate of time needed to complete: 2 hours
+
+Start time:4:45pm
+
+Finish time:5:50 pm
+
+Actual time needed to complete: 1 hour 5 minutes
+
+
+[6/9/2020 Partner Whiteboarding](whiteboard2.png)
