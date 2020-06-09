@@ -5,7 +5,7 @@
 const express = require('express');
 //add the bodyguard
 const cors = require('cors');
-const superagent = require('supergaent');
+const superagent = require('superagent');
 // get our secrets from our secret keeper
 require('dotenv').config();
 
