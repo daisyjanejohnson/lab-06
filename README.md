@@ -12,7 +12,9 @@ Creating a app that shows the user information stored in data files after search
 ## Architecture
 Built with JQuery and Node.js
 
-## change Log
+## Change Log
+Server up and running 3:00 pm 6/8/2020
+lab finished 5:00 pm 6/8/2020
 
 ## Credits and Collaborations
 
@@ -24,3 +26,32 @@ Start time: 2:00
 Finish time: 2:25
 
 Actual time needed to complete: 25 minutes
+
+Number and name of feature: Feature 2 Location
+Estimate of time needed to complete: 1 hour
+
+Start time: 2:30
+
+Finish time: 3:15
+
+Actual time needed to complete: 45 minutes
+
+Number and name of feature: Feature 3 Weather
+Estimate of time needed to complete: 1. 5 hour
+
+Start time: 3:15
+
+Finish time: 4:30
+
+Actual time needed to complete: 1 hour 15 minutes
+
+Number and name of feature: Feature 4 Error Handling
+Estimate of time needed to complete: 30 min
+
+Start time: 4:30
+
+Finish time: 5:00
+
+Actual time needed to complete: 30 minutes
+
+![6/8/2020 Partner Whiteboarding](whiteboard1.png)
