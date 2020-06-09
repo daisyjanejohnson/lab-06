@@ -3,43 +3,39 @@
 
 //use exoress library to set up server
 const express = require('express');
-const app = express();
-
-
+//add the bodyguard
+const cors = require('cors');
+const superagent = require('superagent');
 // get our secrets from our secret keeper
 require('dotenv').config();
 
-//add the bodyguard
-const cors = require('cors');
-app.use(cors());
-
+const app = express();
 // bring in the PORT from the env
 const PORT = process.env.PORT || 3001;
 
+app.use(cors());
 
 // get the location
 app.get('/location', (request, response) => {
   try {
-    console.log(request.query.city);
-    let search_query = request.query.city
-    let geoData = require('./data/location.json');
 
-    let returnObj = new Location(search_query, geoData[0]);
+    let city = request.query.city
 
-    console.log(returnObj);
-    response.status(200).send(returnObj);
+    let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEO_DATA_API_KEY}&q=${city}&format=json`;
+
+    superagent.get(url)
+      .then(resultsFromSuperAgent => {
+        let returnObj = new Location(city, resultsFromSuperAgent.body[0]);
+
+        response.status(200).send(returnObj);
+      })
   } catch (err) {
     console.log('ERROR', err);
     response.status(500).send('Sorry, this isn\'t working dawg.');
   }
 })
 
-// app.get('/', (request, response) => {
-//   console.log('hello out there');
-//   response.status(200).send('I like pizza');
-// });
-
-
+// Make a location consrtuctor to make new locations as data comes in
 function Location(searchQuery, obj) {
   this.search_query = searchQuery;
   this.formatted_query = obj.display_name;
@@ -50,30 +46,43 @@ function Location(searchQuery, obj) {
 
 app.get('/weather', (request, response) => {
   try {
-    const weatherInfo = getTheWeather(request.query.data);
-    response.status(200).send(weatherInfo)
+    let search_query = request.query.search_query;
+
+    // console.log('the thing the front end is sending on the weather route', search_query);
+
+    let url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${search_query}&key=${process.env.WEATHER_API_KEY}&days=8`;
+
+    superagent.get(url)
+      .then(resultsFromSuperAgent => {
+        console.log(resultsFromSuperAgent.body);
+        const weatherArr = resultsFromSuperAgent.body.data.map(day => {
+          return new Weather(day);
+        })
+        response.status(200).send(weatherArr);
+
+      })
+
+
   } catch (err) {
     console.log('ERROR', err);
     response.status(500).send('Sorry we messed up!');
   }
 })
-
-
 function Weather(obj) {
+  console.log(obj);
   this.forecast = obj.weather.description;
-  this.time = obj.valid_date;
+  this.time = new Date(obj.datetime).toDateString();
 }
 
-// your gonna have an empty array for weather. forEach over that data and push new instance into array.
+app.get('/trails', (request, response) => {
+  let {latitude, longitude} = request.body.trails;
 
-function getTheWeather() {
-  const weatherData = require('./data/weather.json');
-  const weatherArray = [];
-  weatherData.data.forEach((day) => {
-    weatherArray.push(new Weather(day));
-  })
-  return weatherArray;
-}
+  let url = ` https://www.hikingproject.com/data/get-trails?${latitude, longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
+
+  superage
+})
+
+//
 
 
 app.listen(PORT, () => {
