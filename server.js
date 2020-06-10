@@ -6,6 +6,13 @@ const express = require('express');
 //add the bodyguard
 const cors = require('cors');
 const superagent = require('superagent');
+
+// connect to SQL postgress
+const pg = require('pg');
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on('error', err => HTMLFormControlsCollection.error(err));
+
+
 // get our secrets from our secret keeper
 require('dotenv').config();
 
@@ -75,13 +82,14 @@ function Weather(obj) {
 }
 
 app.get('/trails', (request, response) => {
+  // eslint-disable-next-line no-unused-vars
   let {search_query, formatted_query, latitude, longitude} = request.query;
   // let lat = request.query.latitude;
   // let lon = request.query.longitude;
   // console.log(request.query);
 
   let url = `https://www.hikingproject.com/data/get-trails`;
-// ?lat=${lat}&lon=${lon}&key=${process.env.TRAILS_API_KEY}
+
   superagent.get(url)
     .query({
       lat: latitude,
@@ -115,6 +123,19 @@ function Trail(obj) {
 }
 //
 
-app.listen(PORT, () => {
-  console.log(`listening on ${PORT}`);
-})
+// app.listen(PORT, () => {
+//   console.log(`listening on ${PORT}`);
+// })
+
+app.get('*', (request, response) => {
+  response.status(404).send('route not found');
+});
+
+
+client.connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`listening on ${PORT}`);
+    })
+  })
+
