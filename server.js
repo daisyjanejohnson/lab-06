@@ -10,8 +10,9 @@ const superagent = require('superagent');
 // connect to SQL postgress
 const pg = require('pg');
 const client = new pg.Client(process.env.DATABASE_URL);
-client.on('error', err => HTMLFormControlsCollection.error(err));
+client.on('error', err => console.error(err));
 
+//OVER VIEW
 
 // get our secrets from our secret keeper
 require('dotenv').config();
