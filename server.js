@@ -6,6 +6,14 @@ const express = require('express');
 //add the bodyguard
 const cors = require('cors');
 const superagent = require('superagent');
+
+// connect to SQL postgress
+const pg = require('pg');
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on('error', err => console.error(err));
+
+//OVER VIEW
+
 // get our secrets from our secret keeper
 require('dotenv').config();
 
@@ -75,21 +83,29 @@ function Weather(obj) {
 }
 
 app.get('/trails', (request, response) => {
-  let lat = request.query.latitude;
-  let lon = request.query.longitude;
+  // eslint-disable-next-line no-unused-vars
+  let {search_query, formatted_query, latitude, longitude} = request.query;
+  // let lat = request.query.latitude;
+  // let lon = request.query.longitude;
   // console.log(request.query);
 
-  let url = `https://www.hikingproject.com/data/get-trails?lat=${lat}&lon=${lon}&key=${process.env.TRAILS_API_KEY}`;
+  let url = `https://www.hikingproject.com/data/get-trails`;
 
   superagent.get(url)
-    .then(resultsFromSuperAgent => {
-
-      const trailArr = resultsFromSuperAgent.body.trails.map(trail => {
-        return new Trail(trail);
+    .query({
+      lat: latitude,
+      lon: longitude,
+      maxDistance: 200,
+      key: process.env.TRAILS_API_KEY,
+    })
+    .then(resultsFromTrails => {
+      let trailsArr = resultsFromTrails.body.trails;
+      const finalArr = trailsArr.map(trailPath => {
+        return new Trail(trailPath);
       })
       // let returnObj = new Trail(resultsFromSuperAgent.body.trails[0]);
 
-      response.status(200).send(trailArr);
+      response.status(200).send(finalArr);
     }).catch(err => console.log(err));
 
 })
@@ -102,12 +118,25 @@ function Trail(obj) {
   this.stars = obj.stars;
   this.star_votes = obj.starVotes;
   this.trail_url = obj.url;
-  this.conditions = `${obj.conditionStatus} ${obj.conditionDetails}`;
-  this.condition_date = obj.conditionDate.slice(0, 10);
-  this.condition_time = obj.conditionDate.slice(12, 19);
+  this.conditions = `${obj.conditionDetails} ${obj.conditionStatus}`;
+  this.condition_date = new Date(obj.conditionDate).toDateString();
+  this.condition_time = obj.conditionDate.slice(11);
 }
 //
 
-app.listen(PORT, () => {
-  console.log(`listening on ${PORT}`);
-})
+// app.listen(PORT, () => {
+//   console.log(`listening on ${PORT}`);
+// })
+
+app.get('*', (request, response) => {
+  response.status(404).send('route not found');
+});
+
+
+client.connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`listening on ${PORT}`);
+    })
+  })
+
