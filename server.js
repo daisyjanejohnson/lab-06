@@ -40,7 +40,7 @@ app.get('/location', (request, response) => {
     // get URL and API key
     let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEO_DATA_API_KEY}&q=${city}&format=json`;
     // SQL Query
-    let sqlQuery = 'SELECT * FROM locations WHERE search_query=like ($1);'
+    let sqlQuery = 'SELECT * FROM locations WHERE search_query LIKE ($1);'
     let safeValue = [city];
 
     // query the database to see if city is already in there
@@ -131,28 +131,27 @@ function Weather(obj) {
 }
 
 app.get('/trails', (request, response) => {
-  // eslint-disable-next-line no-unused-vars
-  let { search_query, formatted_query, latitude, longitude } = request.query;
+  // let { search_query, formatted_query, latitude, longitude } = request.query;
   // let lat = request.query.latitude;
   // let lon = request.query.longitude;
-  // console.log(request.query);
 
-  let url = `https://www.hikingproject.com/data/get-trails`;
+
+  let url = 'https://www.hikingproject.com/data/get-trails';
 
   superagent.get(url)
     .query({
-      lat: latitude,
-      lon: longitude,
-      maxDistance: 200,
-      key: process.env.TRAILS_API_KEY,
+      lat: request.query.latitude,
+      lon: request.query.longitude,
+      maxDistance: 10,
+      key: process.env.TRAILS_API_KEY
     })
     .then(resultsFromTrails => {
       let trailsArr = resultsFromTrails.body.trails;
       const finalArr = trailsArr.map(trailPath => {
         return new Trail(trailPath);
+
       })
       // let returnObj = new Trail(resultsFromSuperAgent.body.trails[0]);
-
       response.status(200).send(finalArr);
     }).catch(err => console.log(err));
 

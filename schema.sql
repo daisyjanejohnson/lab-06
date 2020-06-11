@@ -5,7 +5,7 @@ CREATE TABLE locations (
   search_query VARCHAR(255),
   formatted_query VARCHAR(255),
   latitude DECIMAL,
-  longitude DECIMAL,
+  longitude DECIMAL
 );
 
 INSERT INTO locations (
@@ -15,12 +15,12 @@ INSERT INTO locations (
   longitude
 )
 
--- VALUES (
---   'seattle',
---   'Seattle, King County, Washington, USA',
---   '47.6038321',
---   '-122.3300624'
--- );
+VALUES (
+  'seattle',
+  'Seattle, King County, Washington, USA',
+  '47.6038321',
+  '-122.3300624'
+);
 
 SELECT * FROM locations;
 
