@@ -5,34 +5,21 @@ require('dotenv').config();
 //use exoress library to set up server
 const express = require('express');
 const app = express();
-
-
-
 //add the bodyguard
 const cors = require('cors');
 app.use(cors());
-
 // connect to SQL postgress
 const pg = require('pg');
 const client = new pg.Client(process.env.DATABASE_URL);
 client.on('error', err => console.error(err));
-
 //Import supergaent - connects us to get data from APIs
 const superagent = require('superagent');
-
 // bring in the PORT from the env
 const PORT = process.env.PORT || 3001;
 
 
 
-// Testing the home route
-app.get('/', (request, response) => {
-  // console.log('Am I on the console?');
-  response.status(200).send('I am on the browser.');
-});
-
-
-// get the location route
+// LOCATION ROUTE
 app.get('/location', (request, response) => {
   try {
     // get the requested city
@@ -49,9 +36,10 @@ app.get('/location', (request, response) => {
       .then(sqlResults => {
 
         if (sqlResults.rowCount > 0) {
+          let output = new QueryLocation(sqlResults.rows[0]);
           console.log('I found the city in the database! Sending it to the front end', sqlResults.rows);
           // if city is in database return it the one location object it asks for.
-          response.status(200).send(sqlResults.rows[0]);
+          response.status(200).send(output);
         } else {
           console.log('I did not find the location in the database, going to location IQ to get location information');
           // if not there grab it from API
@@ -72,34 +60,22 @@ app.get('/location', (request, response) => {
 
               // put location into database
               client.query(sqlQuery, safeValue)
-                .then(() => { }).catch()
+                .then(() => {}).catch()
 
               response.status(200).send(returnObj);
             }).catch(err => console.log(err));
         }
-      }).catch();
+      })
+      // .catch();
 
   } catch (err) {
-    console.log('ERROR', err);
-    response.status(500).send('Sorry, this isn\'t working dawg.');
+    errorHandler(response, err);
   }
 });
 
-// Make a location consrtuctor to make new locations as data comes in
-function Location(searchQuery, obj) {
-  this.search_query = searchQuery;
-  this.formatted_query = obj.display_name;
-  this.latitude = obj.lat;
-  this.longitude = obj.lon;
-}
-// function QueryLocation(obj){
-//   this.search_query = obj.search_query;
-//   this.formatted_query = obj.formatted_query;
-//   this.latitude = obj.latitude;
-//   this.longitude = obj.longitude;
-// }
 
 
+// WEATHER ROUTE
 app.get('/weather', (request, response) => {
   try {
     let search_query = request.query.search_query;
@@ -116,25 +92,16 @@ app.get('/weather', (request, response) => {
         })
         response.status(200).send(weatherArr);
 
-      })
+      }).catch(err => console.log(err));
 
 
   } catch (err) {
-    console.log('ERROR', err);
-    response.status(500).send('Sorry we messed up!');
+    errorHandler(response, err);
   }
 })
-function Weather(obj) {
-  // console.log(obj);
-  this.forecast = obj.weather.description;
-  this.time = new Date(obj.datetime).toDateString();
-}
 
+// TRAILS ROUTE
 app.get('/trails', (request, response) => {
-  // let { search_query, formatted_query, latitude, longitude } = request.query;
-  // let lat = request.query.latitude;
-  // let lon = request.query.longitude;
-
 
   let url = 'https://www.hikingproject.com/data/get-trails';
 
@@ -158,20 +125,9 @@ app.get('/trails', (request, response) => {
 })
 
 
-function Trail(obj) {
-  this.name = obj.name;
-  this.location = obj.location;
-  this.length = obj.length;
-  this.stars = obj.stars;
-  this.star_votes = obj.starVotes;
-  this.trail_url = obj.url;
-  this.conditions = `${obj.conditionDetails} ${obj.conditionStatus}`;
-  this.condition_date = new Date(obj.conditionDate).toDateString();
-  this.condition_time = obj.conditionDate.slice(11);
-}
-
+// RESTURANT ROUTE
 app.get('/yelp', (request, response) => {
-  try{
+  try {
     let url = 'https://api.yelp.com/v3/businesses/search';
 
     // pagination
@@ -197,13 +153,80 @@ app.get('/yelp', (request, response) => {
         response.status(200).send(finalYelp);
 
       }).catch(err => console.log(err));
-  }catch(err){
-    console.log('ERROR', err);
-    response.status(500).send('Sorry we messed up!');
+  } catch (err) {
+    errorHandler(response, err);
   }
 
 });
 
+//MOVIE ROUTE
+app.get('/movies', (request, response) => {
+  try {
+    let city = request.query.search_query;
+    // api url
+    let url = 'https://api.themoviedb.org/3/search/movie';
+
+    // define query params
+    const queryParams = {
+      api_key: process.env.MOVIE_API_KEY,
+      query: city,
+      limit: 20
+    }
+
+    // Grab movies from database
+    superagent.get(url)
+    // use wuery params
+      .query(queryParams)
+      .then(data => {
+        console.log('data from superagent', data.body);
+        // map data into array
+        let moviesArr = data.body.results.map(value => new Movie(value));
+        // put array on front end
+        response.status(200).send(moviesArr);
+      }).catch(err => console.log(err));
+  } catch (err) {
+    errorHandler(response, err);
+  }
+})
+
+
+// LOCATION CONSTRUCTOR
+function Location(searchQuery, obj) {
+  this.search_query = searchQuery;
+  this.formatted_query = obj.display_name;
+  this.latitude = obj.lat;
+  this.longitude = obj.lon;
+}
+
+// QUERY LOCATION CONSTRUCTOR
+function QueryLocation(obj){
+  this.search_query = obj.search_query;
+  this.formatted_query = obj.formatted_query;
+  this.latitude = obj.latitude;
+  this.longitude = obj.longitude;
+}
+
+// WEATHER CONSTRUCTOR
+function Weather(obj) {
+  // console.log(obj);
+  this.forecast = obj.weather.description;
+  this.time = new Date(obj.datetime).toDateString();
+}
+
+// TRAIL CONSTRUCTOR
+function Trail(obj) {
+  this.name = obj.name;
+  this.location = obj.location;
+  this.length = obj.length;
+  this.stars = obj.stars;
+  this.star_votes = obj.starVotes;
+  this.trail_url = obj.url;
+  this.conditions = `${obj.conditionDetails} ${obj.conditionStatus}`;
+  this.condition_date = new Date(obj.conditionDate).toDateString();
+  this.condition_time = obj.conditionDate.slice(11);
+}
+
+// RESTURANT CONSTRUCTOR
 function Yelp(obj) {
   this.name = obj.name;
   this.image_url = obj.image_url;
@@ -212,33 +235,21 @@ function Yelp(obj) {
   this.url = obj.url;
 }
 
-app.get('/movies', (request, response) => {
-  let url = 'https://api.themoviedb.org/3/movie/550?';
-
-  superagent.get(url)
-    .query({
-      key: process.env.MOVIES_API_KEY
-    })
-    .then(data => {
-      console.log('data from superagent', data.body);
-      let moviesArr = data.body.movies;
-      const finalArr = moviesArr.map(movie => {
-        return new Movie(movie)
-      })
-      response.status(200).send(finalArr);
-    }).catch(err => console.log(err));
-
-})
-
-function Movie(obj){
+// MOVIE CONSTRUCTOR
+function Movie(obj) {
   this.title = obj.original_title;
-
-
-
-
-// app.listen(PORT, () => {
-//   console.log(`listening on ${PORT}`);
-// })
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  this.image_url = `https://image.tmbd.org/t/p/w500/${obj.poster_path}`;
+  this.popularity = obj.popularity;
+  this.realeased_on = obj.release_date;
+}
+// Error
+const errorHandler = (response, err) => {
+  console.log('ERROR', err);
+  response.status(500).send('Something went wrong.');
+}
 
 app.get('*', (request, response) => {
   response.status(404).send('route not found');
