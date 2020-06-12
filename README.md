@@ -98,3 +98,34 @@ Actual time needed to complete: 1 hour 5 minutes
 
 
 [6/9/2020 Partner Whiteboarding](whiteboard2.png)
+
+6/10/20
+# LAB 08
+
+Number and name of feature: Feature 1 Database
+Estimate of time needed to complete: 1 hour
+
+Start time: 3:00 p.m.
+
+Finish time: 4:00 p.m
+Actual time needed to complete: 1 hour
+
+Number and name of feature: Feature 2 Server
+
+Estimate of time needed to complete: 2 hours
+
+Start time: 4:00 p.m.
+
+Finish time: 6:00 p.m
+Actual time needed to complete: 2 hours
+
+Number and name of feature: Feature 3 Deploy
+
+Estimate of time needed to complete: 30 min
+
+Start time: 1:30 pm (6/11/20)
+
+Finish time: 2:00 pm
+Actual time needed to complete: 30 min
+
+[6/10/2020 Partner Whiteboarding](whiteboard3.png)

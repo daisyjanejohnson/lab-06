@@ -1,12 +1,12 @@
 'use strict';
 
-
+// get our secrets from our secret keeper
+require('dotenv').config();
 //use exoress library to set up server
 const express = require('express');
 const app = express();
 
-// get our secrets from our secret keeper
-require('dotenv').config();
+
 
 //add the bodyguard
 const cors = require('cors');
@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 3001;
 
 // Testing the home route
 app.get('/', (request, response) => {
-  console.log('Am I on the console?');
+  // console.log('Am I on the console?');
   response.status(200).send('I am on the browser.');
 });
 
@@ -40,7 +40,7 @@ app.get('/location', (request, response) => {
     // get URL and API key
     let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEO_DATA_API_KEY}&q=${city}&format=json`;
     // SQL Query
-    let sqlQuery = 'SELECT * FROM locations WHERE search_query LIKE ($1);'
+    let sqlQuery = 'SELECT * FROM locations WHERE search_query LIKE ($1);';
     let safeValue = [city];
 
     // query the database to see if city is already in there
@@ -169,7 +169,72 @@ function Trail(obj) {
   this.condition_date = new Date(obj.conditionDate).toDateString();
   this.condition_time = obj.conditionDate.slice(11);
 }
-//
+
+app.get('/yelp', (request, response) => {
+  try{
+    let url = 'https://api.yelp.com/v3/businesses/search';
+
+    // pagination
+    const page = request.query.page;
+    const numPerPage = 5;
+    const start = (page - 1) * numPerPage;
+    // define Query
+    const queryParams = {
+      latitude: request.query.latitude,
+      longitude: request.query.longitude,
+      limit: numPerPage,
+      offset: start
+    }
+
+    superagent.get(url)
+      .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+      .query(queryParams)
+      .then(data => {
+        const finalYelp = data.body.businesses.map(value => {
+          console.log('this is my yelp');
+          return new Yelp(value);
+        })
+        response.status(200).send(finalYelp);
+
+      }).catch(err => console.log(err));
+  }catch(err){
+    console.log('ERROR', err);
+    response.status(500).send('Sorry we messed up!');
+  }
+
+});
+
+function Yelp(obj) {
+  this.name = obj.name;
+  this.image_url = obj.image_url;
+  this.price = obj.price;
+  this.rating = obj.rating;
+  this.url = obj.url;
+}
+
+app.get('/movies', (request, response) => {
+  let url = 'https://api.themoviedb.org/3/movie/550?';
+
+  superagent.get(url)
+    .query({
+      key: process.env.MOVIES_API_KEY
+    })
+    .then(data => {
+      console.log('data from superagent', data.body);
+      let moviesArr = data.body.movies;
+      const finalArr = moviesArr.map(movie => {
+        return new Movie(movie)
+      })
+      response.status(200).send(finalArr);
+    }).catch(err => console.log(err));
+
+})
+
+function Movie(obj){
+  this.title = obj.original_title;
+
+
+
 
 // app.listen(PORT, () => {
 //   console.log(`listening on ${PORT}`);
